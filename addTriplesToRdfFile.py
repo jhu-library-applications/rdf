@@ -24,7 +24,7 @@ else:
     fileName = raw_input('Enter the CSV file of headings to reconcile (including \'.csv\'): ')
 
 startTime = time.time()
-date = datetime.datetime.today()
+date = datetime.datetime.today().strftime('%Y-%m-%d')
 
 #import rdf file into graph
 g = Graph()

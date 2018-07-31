@@ -11,6 +11,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rdfFileName', help='the RDF file to be reconciled against (include the extension). optional - if not provided, the script will ask for input')
 parser.add_argument('-f', '--fileName', help='the CSV file of headings to reconcile (including \'.csv\'). optional - if not provided, the script will ask for input')
+parser.add_argument('-t', '--threshold', help='the threshold (e.g. \'90\' means the strings are 90% similar and 10% different ). optional - if not provided, the script will default to 70')
 args = parser.parse_args()
 
 if args.rdfFileName:
@@ -21,6 +22,10 @@ if args.fileName:
     fileName = args.fileName
 else:
     fileName = raw_input('Enter the CSV file of headings to reconcile (including \'.csv\'): ')
+if args.threshold:
+    threshold = int(args.threshold)
+else:
+    threshold = 70
 
 #define function for finding the prefLabel of a subject
 def retrievePrefLabel(uri):
@@ -33,10 +38,6 @@ def retrievePrefLabel(uri):
     match = [label, str(prefLabel), uri, date]
 
 startTime = time.time()
-
-rdfFileName = 'editedFacultyNamesUpdated.n3'
-fileName = 'newNameHeadings.csv'
-fileName = 'EtdFacultyNames.csv'
 
 #import rdf file into graph
 g = Graph()
@@ -89,7 +90,7 @@ with open(fileName) as csvfile:
                 tokenSort = fuzz.token_sort_ratio(label, label2)
                 tokenSet = fuzz.token_set_ratio(label, label2)
                 avg = (ratio+partialRatio+tokenSort+tokenSet)/4
-                if avg > 70:
+                if avg > threshold:
                     retrievePrefLabel(uri)
                     if match not in completeNearMatches:
                         completeNearMatches.append(match)
@@ -101,6 +102,7 @@ with open(fileName) as csvfile:
                 completeNonMatches.append(label)
                 f3.writerow([label])
 
+#write results to CSV file
 for match in completeNearMatches:
     f2.writerow([match[0]]+[match[1]]+[match[2]]+[match[3]])
 
