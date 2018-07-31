@@ -1,4 +1,4 @@
-#rdf
+# rdf
 
 #### [addTriplesToRdfFile.py](addTriplesToRdfFile.py)
 Based on user input, adds triples to a specified RDF file from a specified CSV file.
