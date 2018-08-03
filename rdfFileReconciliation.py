@@ -56,11 +56,11 @@ completeNearMatches = []
 completeNonMatches = []
 completeExactMatches = []
 f=csv.writer(open('rdfExactMatches.csv','wb'))
-f.writerow(['label']+['rdfLabel']+['uri']+['date'])
+f.writerow(['originalLabel']+['standardizedLabel']+['uri']+['date'])
 f2=csv.writer(open('rdfNearMatches.csv','wb'))
-f2.writerow(['label']+['rdfLabel']+['uri']+['date'])
+f2.writerow(['originalLabel']+['standardizedLabel']+['uri']+['date'])
 f3=csv.writer(open('rdfNonMatches.csv','wb'))
-f3.writerow(['label'])
+f3.writerow(['originalLabel'])
 
 #create counters
 newHeadingsCount = 0

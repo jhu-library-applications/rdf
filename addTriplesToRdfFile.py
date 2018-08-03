@@ -73,6 +73,15 @@ with open(fileName) as csvfile:
 g.serialize(format='n3', destination=open(rdfFileName[:rdfFileName.index('.')]+'Updated.n3','wb'))
 print g.serialize(format='n3')
 
+#extract altLabels and prefLabels to csv
+f=csv.writer(open('labelFindAndReplace.csv','wb'))
+f.writerow(['replacedValue']+['replacementValue'])
+
+q = prepareQuery('SELECT ?altLabel ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel. ?s skos:altLabel ?altLabel }', initNs = {'skos': SKOS})
+results = g.query(q)
+for row in results:
+    f.writerow([row[0].encode('utf-8')]+[row[1].encode('utf-8')])
+
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
