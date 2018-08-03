@@ -50,8 +50,8 @@ f.writerow(['label']+['rdfLabel']+['uri']+['date'])
 with open(fileName) as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
-        altLabel = row['label']
-        prefLabel = row['rdfLabel']
+        altLabel = row['originalLabel']
+        prefLabel = row['standardizedLabel']
         try:
             subjectUri = existingLabels[prefLabel]
             g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
