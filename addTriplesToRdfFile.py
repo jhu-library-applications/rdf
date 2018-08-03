@@ -54,18 +54,20 @@ with open(fileName) as csvfile:
         prefLabel = row['standardizedLabel']
         try:
             subjectUri = existingLabels[prefLabel]
-            g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
-            f.writerow([subjectUri]+[SKOS.altLabel]+[altLabel])
-            f.writerow([])
+            if altLabel != prefLabel and altLabel != '':
+                g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
+                f.writerow([subjectUri]+[SKOS.altLabel]+[altLabel])
+                f.writerow([])
         except:
             uriNum += 1
             subjectUri = 'http://www.library.jhu.edu/identities/'+str(uriNum)
             g.add((URIRef(subjectUri), SKOS.prefLabel, Literal(prefLabel)))
-            g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
+            if altLabel != prefLabel and altLabel != '':
+                g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
+                f.writerow([subjectUri]+[SKOS.altLabel]+[altLabel])
             g.add((URIRef(subjectUri), DC.date, Literal(date)))
             existingLabels[prefLabel] = subjectUri
             f.writerow([subjectUri]+[SKOS.prefLabel]+[prefLabel])
-            f.writerow([subjectUri]+[SKOS.altLabel]+[altLabel])
             f.writerow([subjectUri]+[DC.date]+[date])
             f.writerow([])
 
@@ -76,11 +78,17 @@ print g.serialize(format='n3')
 #extract altLabels and prefLabels to csv
 f=csv.writer(open('labelFindAndReplace.csv','wb'))
 f.writerow(['replacedValue']+['replacementValue'])
-
 q = prepareQuery('SELECT ?altLabel ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel. ?s skos:altLabel ?altLabel }', initNs = {'skos': SKOS})
 results = g.query(q)
 for row in results:
     f.writerow([row[0].encode('utf-8')]+[row[1].encode('utf-8')])
+
+f=csv.writer(open('prefLabels.csv','wb'))
+f.writerow(['prefLabel'])
+q = prepareQuery('SELECT ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel}', initNs = {'skos': SKOS})
+results = g.query(q)
+for row in results:
+    f.writerow([row[0].encode('utf-8')])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

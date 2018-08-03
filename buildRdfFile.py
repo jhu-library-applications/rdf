@@ -18,8 +18,6 @@ if args.fileName:
 else:
     fileName = raw_input('Enter the file name of the CSV of source data (including \'.csv\'): ')
 
-fileName = 'editedFacultyNamesUpdated.csv'
-
 startTime = time.time()
 date = datetime.datetime.today().strftime('%Y-%m-%d')
 nameUriDict = {}
@@ -41,12 +39,14 @@ with open(fileName) as csvfile:
         date = date
         try:
             subjectUri = nameUriDict[prefLabel]
-            g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
+            if altLabel != prefLabel and altLabel != '':
+                g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
         except:
             uriNum += 1
             subjectUri = 'http://www.library.jhu.edu/identities/'+str(uriNum)
             g.add((URIRef(subjectUri), SKOS.prefLabel, Literal(prefLabel)))
-            g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
+            if altLabel != prefLabel:
+                g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
             g.add((URIRef(subjectUri), DC.date, Literal(date)))
             nameUriDict[prefLabel] = subjectUri
 
