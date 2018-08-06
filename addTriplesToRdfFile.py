@@ -73,7 +73,7 @@ with open(fileName) as csvfile:
             f.writerow([])
 
 #create rdf file
-g.serialize(format='n3', destination=open(rdfFileName[:rdfFileName.index('.')]+'Updated.n3','wb'))
+g.serialize(format='n3', destination=open(rdfFileName[:rdfFileName.index('.')]+date+'.n3','wb'))
 print g.serialize(format='n3')
 print 'Original triples count: ', originalTripleCount
 print 'Updated triples count: ', len(g)
