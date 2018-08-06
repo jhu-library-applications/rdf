@@ -76,7 +76,7 @@ g.serialize(format='n3', destination=open(rdfFileName[:rdfFileName.index('.')]+'
 print g.serialize(format='n3')
 
 #extract altLabels and prefLabels to csv
-f=csv.writer(open('labelFindAndReplace.csv','wb'))
+f=csv.writer(open(rdfFileName[:rdfFileName.index('.')]+'labelFindAndReplace.csv','wb'))
 f.writerow(['replacedValue']+['replacementValue'])
 q = prepareQuery('SELECT ?altLabel ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel. ?s skos:altLabel ?altLabel }', initNs = {'skos': SKOS})
 results = g.query(q)
@@ -85,7 +85,7 @@ for row in results:
 
 f=csv.writer(open('prefLabels.csv','wb'))
 f.writerow(['prefLabel'])
-q = prepareQuery('SELECT ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel}', initNs = {'skos': SKOS})
+q = prepareQuery('SELECT ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel }', initNs = {'skos': SKOS})
 results = g.query(q)
 for row in results:
     f.writerow([row[0].encode('utf-8')])
