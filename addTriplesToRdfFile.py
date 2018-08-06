@@ -24,11 +24,12 @@ else:
     fileName = raw_input('Enter the CSV file of headings to reconcile (including \'.csv\'): ')
 
 startTime = time.time()
-date = datetime.datetime.today().strftime('%Y-%m-%d')
+date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
 
 #import rdf file into graph
 g = Graph()
 g.parse(rdfFileName, format='n3')
+originalTripleCount = len(g)
 
 #creating dict of existing labels for comparison
 q = prepareQuery('SELECT ?s ?o WHERE { ?s skos:prefLabel ?o }', initNs = {'skos': SKOS})
@@ -62,21 +63,23 @@ with open(fileName) as csvfile:
             uriNum += 1
             subjectUri = 'http://www.library.jhu.edu/identities/'+str(uriNum)
             g.add((URIRef(subjectUri), SKOS.prefLabel, Literal(prefLabel)))
-            if altLabel != prefLabel and altLabel != '':
+            f.writerow([subjectUri]+[SKOS.prefLabel]+[prefLabel])
+            if altLabel != prefLabel:
                 g.add((URIRef(subjectUri), SKOS.altLabel, Literal(altLabel)))
                 f.writerow([subjectUri]+[SKOS.altLabel]+[altLabel])
             g.add((URIRef(subjectUri), DC.date, Literal(date)))
-            existingLabels[prefLabel] = subjectUri
-            f.writerow([subjectUri]+[SKOS.prefLabel]+[prefLabel])
             f.writerow([subjectUri]+[DC.date]+[date])
+            existingLabels[prefLabel] = subjectUri
             f.writerow([])
 
 #create rdf file
 g.serialize(format='n3', destination=open(rdfFileName[:rdfFileName.index('.')]+'Updated.n3','wb'))
 print g.serialize(format='n3')
+print 'Original triples count: ', originalTripleCount
+print 'Updated triples count: ', len(g)
 
 #extract altLabels and prefLabels to csv
-f=csv.writer(open(rdfFileName[:rdfFileName.index('.')]+'labelFindAndReplace.csv','wb'))
+f=csv.writer(open(rdfFileName[:rdfFileName.index('.')]+'FindAndReplace.csv','wb'))
 f.writerow(['replacedValue']+['replacementValue'])
 q = prepareQuery('SELECT ?altLabel ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel. ?s skos:altLabel ?altLabel }', initNs = {'skos': SKOS})
 results = g.query(q)

@@ -53,14 +53,11 @@ for row in results:
 
 #create lists and csv files
 completeNearMatches = []
-completeNonMatches = []
 completeExactMatches = []
 f=csv.writer(open('rdfExactMatches.csv','wb'))
 f.writerow(['originalLabel']+['standardizedLabel']+['uri']+['date'])
-f2=csv.writer(open('rdfNearMatches.csv','wb'))
+f2=csv.writer(open('rdfNearAndNonMatches.csv','wb'))
 f2.writerow(['originalLabel']+['standardizedLabel']+['uri']+['date'])
-f3=csv.writer(open('rdfNonMatches.csv','wb'))
-f3.writerow(['originalLabel'])
 
 #create counters
 newHeadingsCount = 0
@@ -99,8 +96,7 @@ with open(fileName) as csvfile:
                 nearMatchNewHeadings += 1
             else:
                 nonmatchedNewHeadings += 1
-                completeNonMatches.append(label)
-                f3.writerow([label])
+                f2.writerow([label]+['']+['no match']+[''])
 
 #write results to CSV file
 for match in completeNearMatches:
