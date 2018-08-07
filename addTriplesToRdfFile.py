@@ -12,6 +12,7 @@ from rdflib.plugins.sparql import prepareQuery
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rdfFileName', help='the RDF file to which triples will be added (include the extension). optional - if not provided, the script will ask for input')
 parser.add_argument('-f', '--fileName', help='the CSV file of new triples (including \'.csv\'). optional - if not provided, the script will ask for input')
+parser.add_argument('-d', '--directory', help='the directory for the input and output files. optional - if not provided, the script will assume null')
 args = parser.parse_args()
 
 if args.rdfFileName:
@@ -22,6 +23,10 @@ if args.fileName:
     fileName = args.fileName
 else:
     fileName = raw_input('Enter the CSV file of headings to reconcile (including \'.csv\'): ')
+if args.directory:
+    directory = args.directory
+else:
+    directory = ''
 
 startTime = time.time()
 date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
@@ -30,6 +35,9 @@ date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
 g = Graph()
 g.parse(rdfFileName, format='n3')
 originalTripleCount = len(g)
+
+#create backup of rdf file before updates
+g.serialize(format='n3', destination=open(directory+rdfFileName[:rdfFileName.index('.')]+'Backup'+date+'.n3','wb'))
 
 #creating dict of existing labels for comparison
 q = prepareQuery('SELECT ?s ?o WHERE { ?s skos:prefLabel ?o }', initNs = {'skos': SKOS})
@@ -44,11 +52,11 @@ for row in results:
 uriNum = int(max(uriNums))
 
 #create log files
-f=csv.writer(open(rdfFileName[:rdfFileName.index('.')]+'TriplesAdded'+str(date)+'.csv','wb'))
+f=csv.writer(open(directory+rdfFileName[:rdfFileName.index('.')]+'TriplesAdded'+str(date)+'.csv','wb'))
 f.writerow(['label']+['rdfLabel']+['uri']+['date'])
 
 #parse csv data and add triples to graph
-with open(fileName) as csvfile:
+with open(directory+fileName) as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         altLabel = row['originalLabel']
@@ -73,25 +81,31 @@ with open(fileName) as csvfile:
             f.writerow([])
 
 #create rdf file
-g.serialize(format='n3', destination=open(rdfFileName[:rdfFileName.index('.')]+date+'.n3','wb'))
-print g.serialize(format='n3')
+g.serialize(format='n3', destination=open(directory+rdfFileName,'wb'))
 print 'Original triples count: ', originalTripleCount
 print 'Updated triples count: ', len(g)
 
-#extract altLabels and prefLabels to csv
-f=csv.writer(open(rdfFileName[:rdfFileName.index('.')]+'FindAndReplace.csv','wb'))
+#extract altLabels and prefLabels to csv for find and replace operations
+f=csv.writer(open(directory+rdfFileName[:rdfFileName.index('.')]+'FindAndReplace'+str(date)+'.csv','wb'))
 f.writerow(['replacedValue']+['replacementValue'])
 q = prepareQuery('SELECT ?altLabel ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel. ?s skos:altLabel ?altLabel }', initNs = {'skos': SKOS})
 results = g.query(q)
 for row in results:
     f.writerow([row[0].encode('utf-8')]+[row[1].encode('utf-8')])
 
-f=csv.writer(open('prefLabels.csv','wb'))
+#extract prefLabels to csv
+f=csv.writer(open(directory+'prefLabels'+str(date)+'.csv','wb'))
 f.writerow(['prefLabel'])
 q = prepareQuery('SELECT ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel }', initNs = {'skos': SKOS})
 results = g.query(q)
 for row in results:
     f.writerow([row[0].encode('utf-8')])
+
+#extract all triples to csv
+f=csv.writer(open(directory+'allTriples'+str(date)+'.csv','wb'))
+f.writerow(['subject']+['predicate']+['object'])
+for s, p, o in g:
+    f.writerow([s.encode('utf-8')]+[p.encode('utf-8')]+[o.encode('utf-8')])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)

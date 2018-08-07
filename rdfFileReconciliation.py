@@ -1,6 +1,7 @@
 import csv
 from fuzzywuzzy import fuzz
 import time
+import datetime
 import rdflib
 from rdflib import Graph
 from rdflib.namespace import RDF, SKOS, DC
@@ -11,6 +12,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rdfFileName', help='the RDF file to be reconciled against (include the extension). optional - if not provided, the script will ask for input')
 parser.add_argument('-f', '--fileName', help='the CSV file of headings to reconcile (including \'.csv\'). optional - if not provided, the script will ask for input')
+parser.add_argument('-d', '--directory', help='the directory for the input and output files. optional - if not provided, the script will assume null')
 parser.add_argument('-t', '--threshold', help='the threshold (e.g. \'90\' means the strings are 90% similar and 10% different ). optional - if not provided, the script will default to 70')
 args = parser.parse_args()
 
@@ -26,6 +28,10 @@ if args.threshold:
     threshold = int(args.threshold)
 else:
     threshold = 70
+if args.directory:
+    directory = args.directory
+else:
+    directory = ''
 
 #define function for finding the prefLabel of a subject
 def retrievePrefLabel(uri):
@@ -38,6 +44,7 @@ def retrievePrefLabel(uri):
     match = [label, str(prefLabel), uri, date]
 
 startTime = time.time()
+date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
 
 #import rdf file into graph
 g = Graph()
@@ -54,9 +61,9 @@ for row in results:
 #create lists and csv files
 completeNearMatches = []
 completeExactMatches = []
-f=csv.writer(open('rdfExactMatches.csv','wb'))
+f=csv.writer(open(directory+'rdfExactMatches'+date+'.csv','wb'))
 f.writerow(['originalLabel']+['standardizedLabel']+['uri']+['date'])
-f2=csv.writer(open('rdfNearAndNonMatches.csv','wb'))
+f2=csv.writer(open(directory+'rdfNearAndNonMatches'+date+'.csv','wb'))
 f2.writerow(['originalLabel']+['standardizedLabel']+['uri']+['date'])
 
 #create counters
@@ -66,7 +73,7 @@ nearMatchNewHeadings = 0
 nonmatchedNewHeadings = 0
 
 #parse CSV data and compares against existingLabels dict for exact and near matches
-with open(fileName) as csvfile:
+with open(directory+fileName) as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         label = row['name']
