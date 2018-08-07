@@ -1,7 +1,7 @@
 # rdf
 
 #### [addTriplesToRdfFile.py](addTriplesToRdfFile.py)
-Based on user input, adds triples to a specified RDF file from a specified CSV file. The script also produces a CSV of all prefLabels in the RDF file and a CSV crosswalk of altLabels to prefLabels for potential find and replace operations.
+Based on user input, adds triples to a specified RDF file from a specified CSV file. The script also produces CSV files of all triples in the RDF file, all skos:prefLabels in the RDF file, and a CSV crosswalk of altLabels to prefLabels for potential find and replace operations.
 
 #### [buildRdfFile.py](buildRdfFile.py)
 Based on user input, builds an RDF file from a specified CSV file.
