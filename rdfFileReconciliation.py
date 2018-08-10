@@ -8,6 +8,7 @@ from rdflib.namespace import RDF, SKOS, DC
 from rdflib import URIRef, BNode, Literal
 from rdflib.plugins.sparql import prepareQuery
 import argparse
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-r', '--rdfFileName', help='the RDF file to be reconciled against (include the extension). optional - if not provided, the script will ask for input')
@@ -43,6 +44,7 @@ def retrievePrefLabel(uri):
     global match
     match = [label, str(prefLabel), uri, date]
 
+os.chdir(directory)
 startTime = time.time()
 date = datetime.datetime.now().strftime('%Y-%m-%d %H.%M.%S')
 
@@ -61,9 +63,9 @@ for row in results:
 #create lists and csv files
 completeNearMatches = []
 completeExactMatches = []
-f=csv.writer(open(directory+'rdfExactMatches'+date+'.csv','wb'))
+f=csv.writer(open(os.path.join('reconciliationResults','rdfExactMatches'+date+'.csv'),'wb'))
 f.writerow(['originalLabel']+['standardizedLabel']+['uri']+['date'])
-f2=csv.writer(open(directory+'rdfNearAndNonMatches'+date+'.csv','wb'))
+f2=csv.writer(open(os.path.join('reconciliationResults','rdfNearAndNonMatches'+date+'.csv'),'wb'))
 f2.writerow(['originalLabel']+['standardizedLabel']+['uri']+['date'])
 
 #create counters
@@ -73,11 +75,15 @@ nearMatchNewHeadings = 0
 nonmatchedNewHeadings = 0
 
 #parse CSV data and compares against existingLabels dict for exact and near matches
-with open(directory+fileName) as csvfile:
+with open(fileName) as csvfile:
+    reader = csv.DictReader(csvfile)
+    rowCount = len(list(reader))
+with open(fileName) as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         label = row['name']
-        print label
+        rowCount -= 1
+        print 'Rows remaining: ', rowCount
         newHeadingsCount += 1
         preCount = len(completeNearMatches)
         for label2, uri in existingLabels.items():
@@ -87,7 +93,6 @@ with open(directory+fileName) as csvfile:
                 retrievePrefLabel(uri)
                 f.writerow([match[0]]+[match[1]]+[match[2]]+[match[3]])
         if label not in completeExactMatches:
-            print '2nd pass', label
             for label2, uri in existingLabels.items():
                 ratio = fuzz.ratio(label, label2)
                 partialRatio = fuzz.partial_ratio(label, label2)

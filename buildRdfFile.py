@@ -8,16 +8,23 @@ from rdflib import Graph
 from rdflib.namespace import RDF, DC, SKOS
 from rdflib import URIRef, BNode, Literal
 from rdflib.plugins.sparql import prepareQuery
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-f', '--fileName', help='the CSV file of source data. optional - if not provided, the script will ask for input')
+parser.add_argument('-d', '--directory', help='the directory for the input and output files. optional - if not provided, the script will assume null')
 args = parser.parse_args()
 
 if args.fileName:
     fileName = args.fileName
 else:
     fileName = raw_input('Enter the file name of the CSV of source data (including \'.csv\'): ')
+if args.directory:
+    directory = args.directory
+else:
+    directory = ''
 
+os.chdir(directory)
 startTime = time.time()
 date = datetime.datetime.today().strftime('%Y-%m-%d')
 nameUriDict = {}
@@ -53,6 +60,12 @@ with open(fileName) as csvfile:
 #create rdf file
 g.serialize(format='n3', destination=open(fileName[:fileName.index('.')]+'.n3','wb'))
 print g.serialize(format='n3')
+
+#extract all triples to csv
+f=csv.writer(open('allTriples'+str(date)+'.csv','wb'))
+f.writerow(['subject']+['predicate']+['object'])
+for s, p, o in g:
+    f.writerow([s.encode('utf-8')]+[p.encode('utf-8')]+[o.encode('utf-8')])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
