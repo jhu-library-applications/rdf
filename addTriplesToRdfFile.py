@@ -98,11 +98,11 @@ for row in results:
 
 #extract prefLabels to csv
 f=csv.writer(open(os.path.join('prefLabels','prefLabels'+timeStamp+'.csv'),'wb'))
-f.writerow(['prefLabel'])
-q = prepareQuery('SELECT ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel }', initNs = {'skos': SKOS})
+f.writerow(['uri']+['prefLabel'])
+q = prepareQuery('SELECT ?s ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel }', initNs = {'skos': SKOS})
 results = g.query(q)
 for row in results:
-    f.writerow([row[0].encode('utf-8')])
+    f.writerow([row[1].encode('utf-8')]+[row[0].encode('utf-8')])
 
 #extract all triples to csv
 f=csv.writer(open(os.path.join('allTriples','allTriples'+timeStamp+'.csv'),'wb'))

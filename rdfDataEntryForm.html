@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>RDF Data Entry Form</title>
+    <meta charset="UTF-8"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  </head>
+  <body>
+    <h2 class="jumbotron">RDF Data Entry Form</h2>
+    <input class="well" id="csv" type="file"></input>
+    <table class="table table-bordered">
+    <tr>
+    </tr>
+      <tr>
+        <th><h3>Subject</h3></th>
+        <th><h3>Predicate</h3></th>
+        <th><h3>Object</h3></th>
+      </tr>
+      <tr>
+        <td>
+          <select id="subject">
+          </select>
+        </td>
+        <td>
+          <select id="predicate">
+            <option value="http://www.w3.org/2004/02/skos/core#altLabel">skos:altLabel</option>
+            <option value="http://www.w3.org/2004/02/skos/core#prefLabel">skos:prefLabel</option>
+          </select>
+        </td>
+        <td>
+          <textarea id="object"></textarea>
+        </td>
+      </tr>
+    </table>
+
+    <h3>Add Triples</h3>
+    <div class="well">
+      <h4>File name</h4>
+      <button onclick="addTriples()">Add Triples</button>
+      <p id="display"><p>
+    </div>
+
+    <h3>Download</h3>
+    <form class="well" onsubmit="downloadRdf(this['name'].value, triplesRdf)">
+    <input type="text" name="name" value="triples">
+    <input type="submit" value="Download RDF">
+
+    <script>
+      var subject = document.querySelector("#subject");
+      var predicate = document.querySelector("#predicate")
+      var object = document.querySelector("#object")
+      var triplesRdf = ""
+      var triplesHtml = ""
+
+      function addTriples() {
+        triplesRdf = triplesRdf + "<" + subject.value + "> <" + predicate.value + "> \"" + object.value + "\".\r\n"
+        triplesHtml = triplesHtml + "<p>" + subject.value + " -- " + predicate.value + " -- " + object.value  + "</p>"
+        document.querySelector("#display").innerHTML = triplesHtml
+        }
+
+      function downloadRdf(filename, text) {
+        var date = Date.now()
+        var element = document.createElement('a');
+        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+        element.setAttribute('download', filename + ".nt");
+        element.style.display = 'none';
+        document.body.appendChild(element);
+        element.click();
+        document.body.removeChild(element);
+        }
+
+      var fileInput = document.getElementById("csv")
+
+      readFile = function () {
+        var reader = new FileReader();
+        var select = document.querySelector("#subject")
+        reader.onload = function () {
+        var array = reader.result.split('\n');
+          array.sort()
+          for (i = 1; i < array.length; i++) {
+            optionText = array[i].split('",')
+            var optionElement = document.createElement("option");
+            optionElement.text = optionText[0].replace("\"","");
+            optionElement.value = String(optionText[1].replace("\"",""));
+            select.appendChild(optionElement);
+            }
+          };
+        reader.readAsText(fileInput.files[0]);
+        };
+      fileInput.addEventListener('change', readFile);
+    </script>
+  </body>
+</html>
