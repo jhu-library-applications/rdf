@@ -1,5 +1,4 @@
 import csv
-from fuzzywuzzy import fuzz
 import time
 import datetime
 import argparse
@@ -54,7 +53,7 @@ for row in results:
 #set uri starting point
 uriNum = int(max(uriNums))
 
-#create log files
+#create log file
 f=csv.writer(open(os.path.join('triplesAdded', rdfFileName[:rdfFileName.index('.')]+'TriplesAdded'+timeStamp+'.csv'),'wb'))
 f.writerow(['label']+['rdfLabel']+['uri']+['date'])
 
@@ -63,7 +62,7 @@ with open(fileName) as csvfile:
     reader = csv.DictReader(csvfile)
     for row in reader:
         altLabel = row['originalLabel']
-        prefLabel = row['standardizedLabel']
+        prefLabel = row['standardizedLabel'].strip()
         try:
             subjectUri = existingLabels[prefLabel]
             if altLabel != prefLabel and altLabel != '':
@@ -102,7 +101,7 @@ f.writerow(['uri']+['prefLabel'])
 q = prepareQuery('SELECT ?s ?prefLabel WHERE { ?s skos:prefLabel ?prefLabel }', initNs = {'skos': SKOS})
 results = g.query(q)
 for row in results:
-    f.writerow([row[1].encode('utf-8')]+[row[0].encode('utf-8')])
+    f.writerow([row[0].encode('utf-8')]+[row[1].encode('utf-8')])
 
 #extract all triples to csv
 f=csv.writer(open(os.path.join('allTriples','allTriples'+timeStamp+'.csv'),'wb'))
