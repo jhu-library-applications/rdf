@@ -18,7 +18,7 @@ args = parser.parse_args()
 if args.fileName:
     fileName = args.fileName
 else:
-    fileName = raw_input('Enter the file name of the CSV of source data (including \'.csv\'): ')
+    fileName = input('Enter the file name of the CSV of source data (including \'.csv\'): ')
 if args.directory:
     directory = args.directory
 else:
@@ -58,16 +58,16 @@ with open(fileName) as csvfile:
             nameUriDict[prefLabel] = subjectUri
 
 #create rdf file
-g.serialize(format='n3', destination=open(fileName[:fileName.index('.')]+'.n3','wb'))
-print g.serialize(format='n3')
+g.serialize(format='n3', destination=open(fileName[:fileName.index('.')]+'.n3','w'))
+print(g.serialize(format='n3'))
 
 #extract all triples to csv
-f=csv.writer(open('allTriples'+str(date)+'.csv','wb'))
+f=csv.writer(open('allTriples'+str(date)+'.csv','w'))
 f.writerow(['subject']+['predicate']+['object'])
 for s, p, o in g:
-    f.writerow([s.encode('utf-8')]+[p.encode('utf-8')]+[o.encode('utf-8')])
+    f.writerow([s]+[p]+[o])
 
 elapsedTime = time.time() - startTime
 m, s = divmod(elapsedTime, 60)
 h, m = divmod(m, 60)
-print 'Total script run time: ', '%d:%02d:%02d' % (h, m, s)
+print('Total script run time: ', '%d:%02d:%02d' % (h, m, s))
